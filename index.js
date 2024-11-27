@@ -1,8 +1,11 @@
 const stageEl = document.querySelector("passage-stage");
 const bgEl = document.querySelector("#bg");
 
+// We really need to just bite the bullet and parse
 const linkRegex = /\[a (.*?)](.*?)\[\/a]/g;
 const bgRegex = /\[bg (.*?)]/g;
+const varRegex = /\[var (.*?)]/g;
+
 let shortcuts = {};
 let transitioning = false;
 
@@ -42,9 +45,21 @@ async function jumpTo(passageName) {
         html = html.replace(bgMatch[0], "");
     }
 
+    for (const varMatch of RawPassages[passageName].matchAll(varRegex)) {
+        const path = varMatch[1];
+        html = html.replace(varMatch[0], `<span hook="${path}"></span>`);
+    }
+
     stageEl.style.opacity = 0.0;
     await timeout(210);
     stageEl.innerHTML = html;
+
+    // HACK:
+    for (const varMatch of RawPassages[passageName].matchAll(varRegex)) {
+        const path = varMatch[1];
+        updatePath(path);
+    }
+
     stageEl.style.opacity = 1.0;
     await timeout(210);
     transitioning = false;
