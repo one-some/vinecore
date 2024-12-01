@@ -55,10 +55,11 @@ async function jumpTo(passageName) {
     stageEl.innerHTML = html;
 
     // HACK:
-    for (const varMatch of RawPassages[passageName].matchAll(varRegex)) {
-        const path = varMatch[1];
-        updatePath(path);
-    }
+    refreshHooks();
+    // for (const varMatch of RawPassages[passageName].matchAll(varRegex)) {
+    //     const path = varMatch[1];
+    //     updatePath(path);
+    // }
 
     stageEl.style.opacity = 1.0;
     await timeout(210);

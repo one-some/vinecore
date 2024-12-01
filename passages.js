@@ -3,6 +3,7 @@ desert: `
 [bg desert]
 You walk to the desert.
 
+time is : [var time]
 A animal say: Hello, [var player.name]
 
 [a forest]Walk to the forest[/a]`,
