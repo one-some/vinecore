@@ -6,10 +6,10 @@ You walk to the desert.
 time is : [var time]
 A animal say: Hello, [var player.name]
 
-[a forest]Walk to the forest[/a]`,
+[a forest w:20]Walk to the forest[/a]`,
 forest: `
 [bg forest]
 Welcome toooo the forest
 
-[a desert]Walk to the desert[/a]`
+[a desert w:20]Walk to the desert[/a]`
 };
