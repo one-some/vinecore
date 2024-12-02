@@ -32,6 +32,8 @@ async function jumpTo(passageName) {
     for (const linkMatch of RawPassages[passageName].matchAll(linkRegex)) {
         const bits = linkMatch[1].split(" ");
         const name = bits[0];
+        let text = linkMatch[2];
+        if (!RawPassages[name]) throw new Error(`Bad passage ${name}`);
 
         const options = {
             timePassed: 0
@@ -42,18 +44,17 @@ async function jumpTo(passageName) {
             switch (key) {
                 case "w":
                     if (isNaN(val)) throw new Error("Bad wait time");
-                    options.timePassed = parseInt(val) * 60 * randRange(0.95, 1.05);
+                    const minutes = parseInt(val);
+                    options.timePassed = minutes * 60 * randRange(0.9, 1.1);
+                    text += ` [${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}]`;
                     break;
             }
         }
 
-        let text = linkMatch[2];
-        if (!RawPassages[name]) throw new Error(`Bad passage ${name}`);
 
         // HACK: We're doing this instead of like parsing it all into elements random
         // TODO: Avoid collisions...
         const randomID = btoa(Math.random() * 100).slice(0, 12);
-        html = html.replace(linkMatch[0], `<a id="${randomID}">${text}</a>`);
 
         for (let char of text) {
             char = char.toLowerCase();
@@ -63,8 +64,8 @@ async function jumpTo(passageName) {
             break;
         }
 
+        html = html.replace(linkMatch[0], `<a id="${randomID}">${text}</a>`);
         hackMap[randomID] = function() {
-            console.log(options);
             passTime(options.timePassed);
             jumpTo(name);
         };
