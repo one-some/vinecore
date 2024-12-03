@@ -29,6 +29,52 @@ async function jumpTo(passageName) {
     shortcuts = {};
     const hackMap = {};
 
+
+
+    const tagRegex = /\[(.*)](.*)\[\/(.*)]/g;
+    for (const tagMatch of html.matchAll(tagRegex)) {
+        let outHTML = "";
+        let bits = [""];
+        let inQuote = false;
+
+        for (let i = 0; i < tagMatch[1].length; i++) {
+            const char = tagMatch[1][i];
+            if (char === '"') inQuote = !inQuote;
+
+            if (char === " " && !inQuote) {
+                bits.push("");
+                continue;
+            }
+            bits[bits.length - 1] += char;
+        }
+
+        const tagName = bits.shift();
+
+        const inner = tagMatch[2];
+        console.log(bits, tagMatch[0], inner);
+
+        html = html.replace(tagMatch[0], outHTML);
+    }
+    return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     for (const s of document.querySelectorAll("script.passage-script")) {
         s.remove();
     }

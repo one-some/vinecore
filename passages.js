@@ -6,7 +6,7 @@ You walk to the desert.
 time is : [var time]
 A animal say: Hello, [var player.name]
 
-[a forest w:20]Walk to the forest[/a]`,
+[a forest w:20 script:"evil"]Walk to the forest[/a]`,
 forest: `
 [bg forest]
 Welcome toooo the forest
@@ -14,7 +14,7 @@ Welcome toooo the forest
 [a desert w:20]Walk to the desert[/a]
 
 <div criteria="Math.random() < 0.3">
-    <as script="gameGlobals.player.money += 10">You see a dolar....</as>
+    [a script:"gameGlobals.player.money += 10"]You see a dolar....[/a]
     Hello
 </div>
 `
