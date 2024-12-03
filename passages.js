@@ -11,5 +11,11 @@ forest: `
 [bg forest]
 Welcome toooo the forest
 
-[a desert w:20]Walk to the desert[/a]`
+[a desert w:20]Walk to the desert[/a]
+
+<div criteria="Math.random() < 0.3">
+    <as script="gameGlobals.player.money += 10">You see a dolar....</as>
+    Hello
+</div>
+`
 };

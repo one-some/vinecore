@@ -3,6 +3,7 @@ const bgEl = document.querySelector("#bg");
 
 // We really need to just bite the bullet and parse
 const linkRegex = /\[a (.*?)](.*?)\[\/a]/g;
+const scriptRegex = /\[script](.*?)\[\/script]/g;
 const bgRegex = /\[bg (.*?)]/g;
 const varRegex = /\[var (.*?)]/g;
 
@@ -25,9 +26,23 @@ async function jumpTo(passageName) {
 
     let html = RawPassages[passageName];
     html = html.trim();
-    html = html.replaceAll("\n", "<br>");
     shortcuts = {};
     const hackMap = {};
+
+    for (const s of document.querySelectorAll("script.passage-script")) {
+        s.remove();
+    }
+
+    for (const scriptMatch of html.matchAll(scriptRegex)) {
+        const scriptEl = document.createElement("script");
+        scriptEl.innerHTML = scriptMatch[1];
+        scriptEl.classList.add("passage-script");
+        console.log(scriptMatch);
+        document.head.appendChild(scriptEl);
+        html = html.replace(scriptMatch[0], "");
+    }
+
+    html = html.replaceAll("\n", "<br>");
 
     for (const linkMatch of RawPassages[passageName].matchAll(linkRegex)) {
         const bits = linkMatch[1].split(" ");
@@ -87,6 +102,11 @@ async function jumpTo(passageName) {
     
     for (const [id, func] of Object.entries(hackMap)) {
         stageEl.querySelector("#" + id).addEventListener("click", func);
+    }
+
+    for (const el of document.querySelectorAll("[criteria]")) {
+        const visible = eval(el.getAttribute("criteria"));
+        el.classList.toggle("hidden", !visible);
     }
 
     // HACK:

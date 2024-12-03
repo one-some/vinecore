@@ -3,6 +3,7 @@ const VarHooks = [];
 class Character {
     name = "? ? ?";
     role = "testificate";
+    money = 0;
 
     constructor() {
     }
@@ -26,21 +27,45 @@ VarHooks.push(function() {
     });
 
     const hour = date.getHours();
+    const decHour = hour + (date.getMinutes() / 60);
+    const blockEl = document.querySelector("time-block");
 
     let timeClass;
+
+    let scaledCelestial;
+    if (hour > 4 && hour <= 20) {
+        // Morning, Afternoon, Evening
+        scaledCelestial = (decHour - 4) / 20;
+    } else {
+        // Night
+        scaledCelestial = ((decHour < 20 ? decHour + 24 : decHour) - 21) / 8;
+    }
+    console.log(scaledCelestial);
+
+    const celestialAngle = (scaledCelestial * 180) - 90 - 180;
+
+
     if (hour > 4 && hour < 12) {
         timeClass = "MORNING";
+        blockEl.style.background = `linear-gradient(${celestialAngle}deg, rgba(59,162,226,1) 0%, rgba(170,200,219,1) 50%, rgba(255,162,25,1) 100%)`;
     } else if (hour >= 12 && hour < 17) {
         timeClass = "AFTERNOON";
+        blockEl.style.background = `linear-gradient(${celestialAngle}deg, rgba(59,162,226,1) 0%, rgba(170,200,219,1) 50%, rgba(255,162,25,1) 100%)`;
     } else if (hour >= 17 && hour <= 20) {
         timeClass = "EVENING";
+        blockEl.style.background = `linear-gradient(${celestialAngle}deg, rgba(230,159,48,1) 45%, rgba(255,25,244,1) 100%)`;
     } else {
         timeClass = "NIGHT";
+        blockEl.style.background = `linear-gradient(${celestialAngle}deg, rgba(12,0,255,1) 48%, rgba(0,0,0,1) 100%)`;
     }
+
 
     const month = date.toLocaleString("default", { month: "long" });
 
-    document.querySelector("time-block").innerText = `${time} [${timeClass}]\n${month} ${date.getDate()}, ${date.getFullYear()}`;
+    blockEl.className = "";
+    blockEl.classList.add(timeClass.toLowerCase());
+
+    blockEl.innerText = `${time} [${timeClass}]\n${month} ${date.getDate()}, ${date.getFullYear()}`;
 });
 
 function refreshHooks() {
