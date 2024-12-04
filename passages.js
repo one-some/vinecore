@@ -1,5 +1,6 @@
 const RawPassages = {
 desert: `
+[condition HOT]
 [bg desert]
 You walk to the desert.
 

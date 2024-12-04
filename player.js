@@ -4,10 +4,28 @@ class Character {
     name = "? ? ?";
     role = "testificate";
     money = 0;
+    conditions = {};
 
     constructor() {
     }
 }
+
+const Conditions = {
+    COLD: "cold",
+    HOT: "hot",
+};
+
+const ConditionsData = {
+    [Conditions.COLD]: {
+        text: "You are very cold.",
+        color: "lightblue"
+    },
+    [Conditions.HOT]: {
+        text: "You are very hot.",
+        color: "red",
+        desc: "An overwhelming heat consumes you. Healing will be difficult.",
+    }
+};
 
 const gameGlobals = {
     player: new Character(),
@@ -19,6 +37,17 @@ function passTime(time) {
     if (isNaN(time)) throw new Error("Bad time!");
     gameGlobals.time += Math.ceil(time);
 }
+
+VarHooks.push(function() {
+    const condContainer = document.querySelector("status-conditions");
+    condContainer.innerHTML = "";
+
+    for (const [condName, condInstDat] of Object.entries(gameGlobals.player.conditions)) {
+        const dat = ConditionsData[condName];
+        if (!dat) throw new Error("Bad condition");
+        $e("cond", condContainer, { innerText: dat.text, "style.color": dat.color, title: dat.desc});
+    }
+});
 
 VarHooks.push(function() {
     const date = new Date(gameGlobals.time * 1000);
@@ -111,6 +140,9 @@ function loadOb(oldMeat, newSkeleton) {
     for (const [k, skeletonV] of Object.entries(newSkeleton)) {
         const isObject = Object.prototype.toString.call(skeletonV).includes("Object");
         if (isObject) {
+            // HACK. Who knows what this will do
+            if (oldMeat[k] === undefined) oldMeat[k] = {};
+
             loadOb(oldMeat[k], skeletonV);
             continue;
         }

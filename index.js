@@ -46,6 +46,11 @@ function parseTag(tagText) {
 
 function processTag(tag, container) {
     switch (tag.name) {
+        case "condition":
+            const cond = Conditions[tag.bits[0]];
+            if (!cond) throw new Error("Bad condition!");
+            gameGlobals.player.conditions[cond] = { fromEnv: true }
+            break;
         case "bg":
             bgEl.src = `bg/${tag.bits[0]}.png`;
             break;
@@ -85,7 +90,7 @@ function processTag(tag, container) {
     }
 }
 
-async function jumpTo(passageName) {
+async function jumpTo(passageName, {instant = false}={}) {
     if (transitioning) return;
     transitioning = true;
 
@@ -93,8 +98,11 @@ async function jumpTo(passageName) {
 
     gameGlobals.currentPassage = passageName;
 
-    const container = $e("div");
+    for (const [condName, condInstDat] of Object.entries(gameGlobals.player.conditions)) {
+        if (condInstDat.fromEnv) delete gameGlobals.player.conditions[condName];
+    }
 
+    const container = $e("div");
     let html = RawPassages[passageName];
     html = html.trim();
 
@@ -138,8 +146,11 @@ async function jumpTo(passageName) {
         processTag(tag, container);
     }
 
-    stageEl.style.opacity = 0.0;
-    await timeout(210);
+    if (!instant) {
+        stageEl.style.opacity = 0.0;
+        await timeout(210);
+    }
+
     stageEl.innerHTML = "";
     stageEl.appendChild(container);
 
@@ -155,7 +166,7 @@ async function jumpTo(passageName) {
     transitioning = false;
 }
 
-jumpTo(Array.from(Object.keys(RawPassages))[0]);
+jumpTo(gameGlobals.currentPassage, {instant: true});
 
 document.addEventListener("keydown", function(event) {
     const key = event.key.toLowerCase();
