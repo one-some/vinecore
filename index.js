@@ -127,13 +127,33 @@ async function jumpTo(passageName, {instant = false}={}) {
     // Get rid of empty nodes
     nodes = nodes.filter(x => x.content);
 
+    // Trim starting newlines in a really complicated way...ignoring tags
+    let workingNodes = Array.from(nodes);
+    nodes = [];
+    let hitText = false;
+
+    for (const node of workingNodes) {
+        if (node.type !== "text") {
+            nodes.push(node);
+            continue;
+        }
+
+        if (node.content.trim()) hitText = true;
+        if (!hitText) continue;
+
+        nodes.push(node);
+    }
+
+    // Actually do stuff
     for (let i = 0; i < nodes.length; i++) {
+        // Insert text with HTML
         if (nodes[i].type === "text") {
             container.insertAdjacentHTML("beforeend", nodes[i].content.replaceAll("\n", "<br>"));
             continue;
         }
 
         const tag = parseTag(nodes[i].content);
+        // QUESTIONABLE: "if" the only eating-style tag so this is rly specific
         if (tag.name === "if") {
             if (!tag.kv["criteria"]) throw new Error("Expected CRITERIA for if!");
             const good = eval(tag.kv["criteria"]);
