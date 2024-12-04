@@ -15,9 +15,8 @@ Welcome toooo the forest
 [a goto:desert text:"Walk to the forest" time:20]
 
 [if criteria:"Math.random() < 0.5"]
-HII
-    [a script:"gameGlobals.player.money += 10" text:"You see a dolar...."]
-    Hello
+    A glint catches your eye. A coin lays in the sand.
+    [a script:"gameGlobals.player.money += 10" text:"Pick up coin"]
 [/if]
 `
 };
