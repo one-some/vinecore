@@ -94,3 +94,7 @@ time-block {
     font-size: 16px;
     user-select: none;
 }
+
+#money {
+    color: gold;
+}

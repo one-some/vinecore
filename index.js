@@ -1,12 +1,6 @@
 const stageEl = document.querySelector("passage-stage");
 const bgEl = document.querySelector("#bg");
 
-// We really need to just bite the bullet and parse
-const linkRegex = /\[a (.*?)](.*?)\[\/a]/g;
-const scriptRegex = /\[script](.*?)\[\/script]/g;
-const bgRegex = /\[bg (.*?)]/g;
-const varRegex = /\[var (.*?)]/g;
-
 let shortcuts = {};
 let transitioning = false;
 
@@ -18,149 +12,143 @@ function randRange(start, end) {
     return start + (Math.random() * (end - start));
 }
 
+function parseTag(tagText) {
+    let bits = [""];
+    const kv = {}
+    let inQuote = false;
+
+    for (let i = 0; i < tagText.length; i++) {
+        const char = tagText[i];
+        if (char === '"') inQuote = !inQuote;
+
+        if (char === " " && !inQuote) {
+            bits.push("");
+            continue;
+        }
+        bits[bits.length - 1] += char;
+    }
+
+    for (const bit of bits) {
+        let [first, ...rest] = bit.split(":");
+        rest = rest.join(":");
+
+        // FIXME: Only on first and last...... but it wont support it anyway
+        kv[first] = rest.replaceAll('"', "");
+    }
+    bits = bits.filter(x => !x.includes(":"));
+
+    return {
+        name: bits.shift(),
+        bits: bits,
+        kv: kv
+    };
+}
+
+function processTag(tag, container) {
+    switch (tag.name) {
+        case "bg":
+            bgEl.src = `bg/${tag.bits[0]}.png`;
+            break;
+        case "var":
+            $e("span", container, {hook: tag.bits[0]});
+            break;
+        case "a":
+            if (!tag.kv["text"]) throw new Error("Expected anchor to have text");
+            const anchor = $e("a", container, {innerText: tag.kv["text"]});
+
+            if (tag.kv["time"]) {
+                const minutes = parseInt(tag.kv["time"]);
+                anchor.innerText += ` [${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}]`;
+            }
+
+            for (let char of tag.kv["text"]) {
+                char = char.toLowerCase();
+                if (shortcuts[char]) continue;
+                anchor.innerText += ` [${char}]`;
+                shortcuts[char] = anchor;
+                break;
+            }
+
+            anchor.addEventListener("click", function() {
+                if (tag.kv["script"]) {
+                    eval(tag.kv["script"]);
+                    jumpTo(gameGlobals.currentPassage);
+                }
+
+                if (tag.kv["time"]) passTime(parseInt(tag.kv["time"]) * 60 * randRange(0.9, 1.1));
+
+                if (tag.kv["goto"]) jumpTo(tag.kv["goto"]);
+                refreshHooks();
+            });
+
+            break;
+    }
+}
+
 async function jumpTo(passageName) {
     if (transitioning) return;
     transitioning = true;
 
     if (!RawPassages[passageName]) throw new Error(`Bad passage ${passageName}`);
 
+    gameGlobals.currentPassage = passageName;
+
+    const container = $e("div");
+
     let html = RawPassages[passageName];
     html = html.trim();
+
     shortcuts = {};
     const hackMap = {};
 
+    let nodes = [
+        {type: "text", content: ""}
+    ];
 
+    for (const char of html) {
+        if (char === "[") {
+            nodes.push({type: "tag", content: ""});
+            continue;
+        } else if (char === "]") {
+            nodes.push({type: "text", content: ""});
+            continue;
+        }
+        nodes.at(-1).content += char;
+    }
 
-    const tagRegex = /\[(.*)](.*)\[\/(.*)]/g;
-    for (const tagMatch of html.matchAll(tagRegex)) {
-        let outHTML = "";
-        let bits = [""];
-        let inQuote = false;
+    // Get rid of empty nodes
+    nodes = nodes.filter(x => x.content);
 
-        for (let i = 0; i < tagMatch[1].length; i++) {
-            const char = tagMatch[1][i];
-            if (char === '"') inQuote = !inQuote;
-
-            if (char === " " && !inQuote) {
-                bits.push("");
-                continue;
-            }
-            bits[bits.length - 1] += char;
+    for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].type === "text") {
+            container.insertAdjacentHTML("beforeend", nodes[i].content.replaceAll("\n", "<br>"));
+            continue;
         }
 
-        const tagName = bits.shift();
+        const tag = parseTag(nodes[i].content);
+        if (tag.name === "if") {
+            if (!tag.kv["criteria"]) throw new Error("Expected CRITERIA for if!");
+            const good = eval(tag.kv["criteria"]);
+            if (good) continue;
 
-        const inner = tagMatch[2];
-        console.log(bits, tagMatch[0], inner);
-
-        html = html.replace(tagMatch[0], outHTML);
-    }
-    return;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    for (const s of document.querySelectorAll("script.passage-script")) {
-        s.remove();
-    }
-
-    for (const scriptMatch of html.matchAll(scriptRegex)) {
-        const scriptEl = document.createElement("script");
-        scriptEl.innerHTML = scriptMatch[1];
-        scriptEl.classList.add("passage-script");
-        console.log(scriptMatch);
-        document.head.appendChild(scriptEl);
-        html = html.replace(scriptMatch[0], "");
-    }
-
-    html = html.replaceAll("\n", "<br>");
-
-    for (const linkMatch of RawPassages[passageName].matchAll(linkRegex)) {
-        const bits = linkMatch[1].split(" ");
-        const name = bits[0];
-        let text = linkMatch[2];
-        if (!RawPassages[name]) throw new Error(`Bad passage ${name}`);
-
-        const options = {
-            timePassed: 0
-        };
-
-        for (const bit of bits) {
-            const [key, val] = bit.split(":");
-            switch (key) {
-                case "w":
-                    if (isNaN(val)) throw new Error("Bad wait time");
-                    const minutes = parseInt(val);
-                    options.timePassed = minutes * 60 * randRange(0.9, 1.1);
-                    text += ` [${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}]`;
-                    break;
-            }
+            // If the condition is false, skip until closing statement
+            while (parseTag(nodes[++i].content).name != "/if") {}
         }
 
-
-        // HACK: We're doing this instead of like parsing it all into elements random
-        // TODO: Avoid collisions...
-        const randomID = btoa(Math.random() * 100).slice(0, 12);
-
-        for (let char of text) {
-            char = char.toLowerCase();
-            if (shortcuts[char]) continue;
-            text += ` [${char}]`;
-            shortcuts[char] = randomID;
-            break;
-        }
-
-        html = html.replace(linkMatch[0], `<a id="${randomID}">${text}</a>`);
-        hackMap[randomID] = function() {
-            passTime(options.timePassed);
-            jumpTo(name);
-        };
-    }
-
-    for (const bgMatch of RawPassages[passageName].matchAll(bgRegex)) {
-        bgEl.src = `bg/${bgMatch[1]}.png`;
-        html = html.replace(bgMatch[0], "");
-    }
-
-    for (const varMatch of RawPassages[passageName].matchAll(varRegex)) {
-        const path = varMatch[1];
-        html = html.replace(varMatch[0], `<span hook="${path}"></span>`);
+        processTag(tag, container);
     }
 
     stageEl.style.opacity = 0.0;
     await timeout(210);
-    stageEl.innerHTML = html;
-    
-    for (const [id, func] of Object.entries(hackMap)) {
-        stageEl.querySelector("#" + id).addEventListener("click", func);
-    }
+    stageEl.innerHTML = "";
+    stageEl.appendChild(container);
 
     for (const el of document.querySelectorAll("[criteria]")) {
         const visible = eval(el.getAttribute("criteria"));
         el.classList.toggle("hidden", !visible);
     }
 
-    // HACK:
     refreshHooks();
-    // for (const varMatch of RawPassages[passageName].matchAll(varRegex)) {
-    //     const path = varMatch[1];
-    //     updatePath(path);
-    // }
 
     stageEl.style.opacity = 1.0;
     await timeout(210);
@@ -171,10 +159,8 @@ jumpTo(Array.from(Object.keys(RawPassages))[0]);
 
 document.addEventListener("keydown", function(event) {
     const key = event.key.toLowerCase();
-    const el = document.querySelector("#" + shortcuts[key]);
-
-    if (!el) return;
+    if (!shortcuts[key]) return;
 
     event.preventDefault();
-    el.click();
+    shortcuts[key].click();
 });

@@ -11,10 +11,12 @@ class Character {
 
 const gameGlobals = {
     player: new Character(),
-    time: 200
+    time: 200,
+    currentPassage: Array.from(Object.keys(RawPassages))[0]
 };
 
 function passTime(time) {
+    if (isNaN(time)) throw new Error("Bad time!");
     gameGlobals.time += Math.ceil(time);
 }
 
@@ -75,6 +77,10 @@ function refreshHooks() {
 
         while (pathBits.length) {
             target = target[pathBits.shift()];
+        }
+
+        if (!isNaN(target)) {
+            target = Number(target).toLocaleString();
         }
 
         el.innerText = String(target);
