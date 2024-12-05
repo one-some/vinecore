@@ -30,7 +30,12 @@ const ConditionsData = {
 const gameGlobals = {
     player: new Character(),
     time: 200,
-    currentPassage: Array.from(Object.keys(RawPassages))[0]
+    currentPassage: Array.from(Object.keys(RawPassages))[0],
+    passageHistory: [],
+    battleState: {
+        inBattle: false,
+        battleReturnLocation: null
+    },
 };
 
 function passTime(time) {
@@ -99,14 +104,20 @@ VarHooks.push(function() {
     blockEl.innerText = `${time} [${timeClass}]\n${month} ${date.getDate()}, ${date.getFullYear()}`;
 });
 
+function getGameVar(path) {
+    const pathBits = path.split(".");
+    let target = gameGlobals;
+
+    while (pathBits.length) {
+        target = target[pathBits.shift()];
+    }
+
+    return target;
+}
+
 function refreshHooks() {
     for (const el of document.querySelectorAll("[hook]")) {
-        const pathBits = el.getAttribute("hook").split(".");
-        let target = gameGlobals;
-
-        while (pathBits.length) {
-            target = target[pathBits.shift()];
-        }
+        let target = getGameVar(el.getAttribute("hook"))
 
         if (!isNaN(target)) {
             target = Number(target).toLocaleString();

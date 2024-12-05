@@ -82,7 +82,16 @@ function processTag(tag, container) {
 
                 if (tag.kv["time"]) passTime(parseInt(tag.kv["time"]) * 60 * randRange(0.9, 1.1));
 
-                if (tag.kv["goto"]) jumpTo(tag.kv["goto"]);
+                if (tag.kv["goto"]) {
+                    let goto = tag.kv["goto"];
+                    
+                    // If it starts with $, treat it as a var path to eval
+                    if (goto.startsWith("$")) goto = getGameVar(goto.slice(1));
+
+                    if (!goto) throw new Error("Won't jump to null passage!");
+                    jumpTo(goto);
+                }
+
                 refreshHooks();
             });
 
@@ -91,29 +100,35 @@ function processTag(tag, container) {
 }
 
 async function jumpTo(passageName, {instant = false}={}) {
+    // Early checks
     if (transitioning) return;
     transitioning = true;
-
     if (!RawPassages[passageName]) throw new Error(`Bad passage ${passageName}`);
 
-    gameGlobals.currentPassage = passageName;
+    // Just getting into battle...? Setup battle state of course!
+    if (passageName === "battle" && gameGlobals.currentPassage !== "battle") {
+        gameGlobals.battleState.inBattle = true;
+        gameGlobals.battleState.battleReturnLocation = gameGlobals.currentPassage;
+    }
 
+    // Update passage state
+    gameGlobals.currentPassage = passageName;
+    gameGlobals.passageHistory.push(passageName);
+    gameGlobals.passageHistory = gameGlobals.passageHistory.slice(-30);
+
+
+
+    // Remove old conditions from the player's previous environment (ie hot from desert). These will
+    // be re-applied if needed soon...
     for (const [condName, condInstDat] of Object.entries(gameGlobals.player.conditions)) {
         if (condInstDat.fromEnv) delete gameGlobals.player.conditions[condName];
     }
 
-    const container = $e("div");
-    let html = RawPassages[passageName];
-    html = html.trim();
-
     shortcuts = {};
-    const hackMap = {};
 
-    let nodes = [
-        {type: "text", content: ""}
-    ];
-
-    for (const char of html) {
+    // Parse text into nodes (ie "in brackets" or not)
+    let nodes = [{type: "text", content: ""}];
+    for (const char of RawPassages[passageName].trim()) {
         if (char === "[") {
             nodes.push({type: "tag", content: ""});
             continue;
@@ -121,30 +136,36 @@ async function jumpTo(passageName, {instant = false}={}) {
             nodes.push({type: "text", content: ""});
             continue;
         }
+
         nodes.at(-1).content += char;
     }
 
     // Get rid of empty nodes
     nodes = nodes.filter(x => x.content);
 
-    // Trim starting newlines in a really complicated way...ignoring tags
-    let workingNodes = Array.from(nodes);
-    nodes = [];
+    // Trim starting newlines...ignoring tags
     let hitText = false;
+    nodes = nodes.filter(function(node) {
+        // Ignore tags
+        if (node.type !== "text") return true;
 
-    for (const node of workingNodes) {
-        if (node.type !== "text") {
-            nodes.push(node);
-            continue;
+        // If we're on our first "real text"...
+        if (node.content.trim() && !hitText) {
+            hitText = true;
+
+            // Trim leading newlines from the first text node
+            while (node.content && node.content[0] == "\n") {
+                node.content = node.content.slice(1);
+            }
         }
 
-        if (node.content.trim()) hitText = true;
-        if (!hitText) continue;
+        // Keep the node if we've hit our first real text
+        return hitText;
+    });
 
-        nodes.push(node);
-    }
 
     // Actually do stuff
+    const container = $e("div");
     for (let i = 0; i < nodes.length; i++) {
         // Insert text with HTML
         if (nodes[i].type === "text") {
