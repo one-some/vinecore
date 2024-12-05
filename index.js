@@ -33,8 +33,13 @@ function parseTag(tagText) {
         rest = rest.join(":");
 
         // FIXME: Only on first and last...... but it wont support it anyway
-        kv[first] = rest.replaceAll('"', "");
+        val = rest.replaceAll('"', "");
+
+        // If KV val starts with $, treat it as a var path to eval
+        val = val.startsWith("$") ? getGameVar(val.slice(1)) : val;
+        kv[first] = val;
     }
+
     bits = bits.filter(x => !x.includes(":"));
 
     return {
@@ -85,7 +90,6 @@ function processTag(tag, container) {
                 if (tag.kv["goto"]) {
                     let goto = tag.kv["goto"];
                     
-                    // If it starts with $, treat it as a var path to eval
                     if (goto.startsWith("$")) goto = getGameVar(goto.slice(1));
 
                     if (!goto) throw new Error("Won't jump to null passage!");
