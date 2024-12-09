@@ -103,16 +103,8 @@ function processTag(tag, container) {
     }
 }
 
-function updateBattle() {
-    $el("battle-log").innerHTML = "";
-    for (const msg of gameGlobals.battleState.log) {
-        $e("log-entry", $el("battle-log"), {innerText: msg.text});
-    }
-}
-
 function battleLog(text) {
     gameGlobals.battleState.log.push({text: text});
-    updateBattle();
 }
 
 function startBattle() {
@@ -128,6 +120,7 @@ async function jumpTo(passageName, {instant = false}={}) {
 
     // Just getting into battle...? Setup battle state of course!
     if (passageName === "battle" && gameGlobals.currentPassage !== "battle") {
+        startBattle();
         gameGlobals.battleState.inBattle = true;
         gameGlobals.battleState.battleReturnLocation = gameGlobals.currentPassage;
     }

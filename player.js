@@ -1,13 +1,27 @@
 const VarHooks = [];
 
-class Character {
+const classes = {};
+
+classes.character = (class {
     name = "? ? ?";
     role = "testificate";
     money = 0;
+    maxHealth = 100;
+    health = 0;
     conditions = {};
 
     constructor() {
+        this.health = this.maxHealth;
     }
+})
+
+classes.snake(class extends classes.character {
+    name = "Snake";
+    maxHealth = 50;
+});
+
+for (const [key, cls] of Object.entries(classes)) {
+    cls._key = key;
 }
 
 const Conditions = {
@@ -28,11 +42,14 @@ const ConditionsData = {
 };
 
 const gameGlobals = {
-    player: new Character(),
+    player: new classes.Character(),
     time: 200,
     currentPassage: Array.from(Object.keys(RawPassages))[0],
     passageHistory: [],
     battleState: {
+        enemies: [
+            new classes.Snake()
+        ],
         inBattle: false,
         battleReturnLocation: null,
         log: [],
@@ -43,6 +60,17 @@ function passTime(time) {
     if (isNaN(time)) throw new Error("Bad time!");
     gameGlobals.time += Math.ceil(time);
 }
+
+VarHooks.push(function() {
+    const logCont = $el("battle-log");
+    if (!logCont) return;
+
+    logCont.innerHTML = "";
+    console.log(gameGlobals.battleState.log);
+    for (const msg of gameGlobals.battleState.log) {
+        $e("log-entry", logCont, {innerText: msg.text});
+    }
+});
 
 VarHooks.push(function() {
     const condContainer = document.querySelector("status-conditions");
