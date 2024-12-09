@@ -13,15 +13,19 @@ classes.character = (class {
     constructor() {
         this.health = this.maxHealth;
     }
+
+    battleNoise() {
+        console.log("Burp");
+    }
 })
 
-classes.snake(class extends classes.character {
+classes.snake = (class extends classes.character {
     name = "Snake";
     maxHealth = 50;
 });
 
 for (const [key, cls] of Object.entries(classes)) {
-    cls._key = key;
+    cls.prototype._key = key;
 }
 
 const Conditions = {
@@ -41,14 +45,14 @@ const ConditionsData = {
     }
 };
 
-const gameGlobals = {
-    player: new classes.Character(),
+let gameGlobals = {
+    player: new classes.character(),
     time: 200,
     currentPassage: Array.from(Object.keys(RawPassages))[0],
     passageHistory: [],
     battleState: {
         enemies: [
-            new classes.Snake()
+            new classes.snake()
         ],
         inBattle: false,
         battleReturnLocation: null,
@@ -66,9 +70,12 @@ VarHooks.push(function() {
     if (!logCont) return;
 
     logCont.innerHTML = "";
-    console.log(gameGlobals.battleState.log);
     for (const msg of gameGlobals.battleState.log) {
         $e("log-entry", logCont, {innerText: msg.text});
+    }
+
+    for (const enemy of gameGlobals.battleState.enemies) {
+        //enemy.battleNoise();
     }
 });
 
@@ -105,7 +112,6 @@ VarHooks.push(function() {
         // Night
         scaledCelestial = ((decHour < 20 ? decHour + 24 : decHour) - 21) / 8;
     }
-    console.log(scaledCelestial);
 
     const celestialAngle = (scaledCelestial * 180) - 90 - 180;
 
@@ -164,31 +170,81 @@ function refreshHooks() {
     return true;
 }
 
+function processSave(thing) {
+    if (thing === null) return null;
+    if (thing === undefined) {
+        alert("Undefined in save.... beware...");
+        return null;
+    }
+
+    if (!thing.constructor) return thing;
+
+    switch (thing.constructor.name) {
+        case "Array":
+            return thing.map(x => processSave(x));
+        case "Object":
+            const obClone = {};
+            for (const [k, v] of Object.entries(thing)) {
+                obClone[k] = processSave(v);
+            }
+            return obClone;
+    }
+
+    if (typeof thing === "object" && thing._key) {
+        thing._key = thing._key;
+        return thing;
+    }
+
+    return thing;
+}
+
 function save() {
+    let save = processSave(gameGlobals);
+
     localStorage.setItem(
         "saves",
-        JSON.stringify({auto: gameGlobals})
+        JSON.stringify({auto: save})
     );
 }
 
 function load() {
     const strGlob = JSON.parse(localStorage.getItem("saves")).auto;
-    loadOb(gameGlobals, strGlob);
+    gameGlobals = loadOb2(strGlob);
 }
 
-function loadOb(oldMeat, newSkeleton) {
+function evillllloadOb(oldMeat, newSkeleton) {
     for (const [k, skeletonV] of Object.entries(newSkeleton)) {
         const isObject = Object.prototype.toString.call(skeletonV).includes("Object");
         if (isObject) {
             // HACK. Who knows what this will do
             if (oldMeat[k] === undefined) oldMeat[k] = {};
 
-            loadOb(oldMeat[k], skeletonV);
+            evillllloadOb(oldMeat[k], skeletonV);
             continue;
         }
 
         oldMeat[k] = skeletonV;
     }
+}
+
+function loadOb2(thing) {
+    if (!thing) return thing;
+    if (!thing.constructor) return thing;
+
+    switch (thing.constructor.name) {
+        case "Array":
+            return thing.map(x => loadOb2(x));
+        case "Object":
+            let val = {};
+            if (thing._key) val = new classes[thing._key]();
+
+            for (const [k, v] of Object.entries(thing)) {
+                val[k] = loadOb2(v);
+            }
+            return val;
+    }
+
+    return thing;
 }
 
 load();

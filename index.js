@@ -222,7 +222,6 @@ async function jumpTo(passageName, {instant = false}={}) {
     await timeout(210);
     transitioning = false;
 }
-
 jumpTo(gameGlobals.currentPassage, {instant: true});
 
 document.addEventListener("keydown", function(event) {
