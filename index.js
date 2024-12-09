@@ -103,6 +103,23 @@ function processTag(tag, container) {
     }
 }
 
+function updateBattle() {
+    $el("battle-log").innerHTML = "";
+    for (const msg of gameGlobals.battleState.log) {
+        $e("log-entry", $el("battle-log"), {innerText: msg.text});
+    }
+}
+
+function battleLog(text) {
+    gameGlobals.battleState.log.push({text: text});
+    updateBattle();
+}
+
+function startBattle() {
+    gameGlobals.battleState.log = [];
+    battleLog("You leap into battle!");
+}
+
 async function jumpTo(passageName, {instant = false}={}) {
     // Early checks
     if (transitioning) return;
@@ -169,7 +186,7 @@ async function jumpTo(passageName, {instant = false}={}) {
 
 
     // Actually do stuff
-    const container = $e("div");
+    const container = $e("passage", null, {passage: passageName});
     for (let i = 0; i < nodes.length; i++) {
         // Insert text with HTML
         if (nodes[i].type === "text") {
@@ -206,6 +223,8 @@ async function jumpTo(passageName, {instant = false}={}) {
 
     refreshHooks();
 
+    if (passageName === "battle") startBattle();
+
     stageEl.style.opacity = 1.0;
     await timeout(210);
     transitioning = false;
@@ -214,6 +233,8 @@ async function jumpTo(passageName, {instant = false}={}) {
 jumpTo(gameGlobals.currentPassage, {instant: true});
 
 document.addEventListener("keydown", function(event) {
+    if (event.ctrlKey) return;
+
     const key = event.key.toLowerCase();
     if (!shortcuts[key]) return;
 

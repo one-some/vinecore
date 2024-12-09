@@ -34,7 +34,8 @@ const gameGlobals = {
     passageHistory: [],
     battleState: {
         inBattle: false,
-        battleReturnLocation: null
+        battleReturnLocation: null,
+        log: [],
     },
 };
 
@@ -119,7 +120,7 @@ function refreshHooks() {
     for (const el of document.querySelectorAll("[hook]")) {
         let target = getGameVar(el.getAttribute("hook"))
 
-        if (!isNaN(target)) {
+        if (target && !isNaN(target)) {
             target = Number(target).toLocaleString();
         }
 

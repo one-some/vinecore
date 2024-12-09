@@ -95,6 +95,46 @@ time-block {
     user-select: none;
 }
 
+passage {
+    display: block;
+    height: 100%;
+}
+
 #money {
     color: gold;
+}
+
+passage[passage="battle"] {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#battle-stage {
+    display: flex;
+    justify-content: center;
+}
+
+battle-guy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+battle-guy .name {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+battle-guy img {
+    height: 200px;
+    width: 200px;
+    image-rendering: pixelated;
+}
+
+battle-log {
+    background-color: #000000aa;
+    color: white;
+    font-family: monospace;
+    flex-grow: 1;
 }

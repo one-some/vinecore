@@ -22,7 +22,13 @@ Welcome toooo the forest
 [/if]
 `,
 battle: `
-Let's fight.
-[a goto:$battleState.battleReturnLocation text:"run"]
+<div id="battle-stage">
+    <battle-guy>
+        <span class="name">Snake</span>
+        <img src="img/snake.png">
+    </battle-guy>
+</div>
+<battle-log></battle-log>
+[a goto:$battleState.battleReturnLocation text:"Run"]
 `
 };
