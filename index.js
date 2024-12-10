@@ -110,6 +110,9 @@ function battleLog(text) {
 function startBattle() {
     gameGlobals.battleState.log = [];
     battleLog("You leap into battle!");
+    for (const enemy of gameGlobals.battleState.enemies) {
+        enemy.battleNoise();
+    }
 }
 
 async function jumpTo(passageName, {instant = false}={}) {

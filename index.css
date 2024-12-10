@@ -133,6 +133,8 @@ battle-guy img {
 }
 
 battle-log {
+    display: flex;
+    flex-direction: column;
     background-color: #000000aa;
     color: white;
     font-family: monospace;

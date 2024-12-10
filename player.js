@@ -15,13 +15,17 @@ classes.character = (class {
     }
 
     battleNoise() {
-        console.log("Burp");
+        battleLog(`${this.name} looks angry... grrrrr`);
     }
 })
 
 classes.snake = (class extends classes.character {
     name = "Snake";
     maxHealth = 50;
+
+    battleNoise() {
+        battleLog(`${this.name} bears its fangs.`);
+    }
 });
 
 for (const [key, cls] of Object.entries(classes)) {
@@ -74,8 +78,14 @@ VarHooks.push(function() {
         $e("log-entry", logCont, {innerText: msg.text});
     }
 
+    const battleStage = $el("#battle-stage");
+    battleStage.innerHTML = "";
+
     for (const enemy of gameGlobals.battleState.enemies) {
-        //enemy.battleNoise();
+        const guy = $e("battle-guy", battleStage);
+        $e("span", guy, {classes: ["name"], innerText: enemy.name});
+        $e("img", guy, {src: "img/snake.png"});
+        console.log(enemy);
     }
 });
 
