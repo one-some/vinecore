@@ -30,5 +30,6 @@ battle: `
 </div>
 <battle-log></battle-log>
 [a goto:$battleState.battleReturnLocation text:"Run"]
+[a script:"battleSlap()" text:"Slap" refresh:no]
 `
 };

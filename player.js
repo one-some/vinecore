@@ -69,6 +69,11 @@ function passTime(time) {
     gameGlobals.time += Math.ceil(time);
 }
 
+function battleSlap() {
+    gameGlobals.battleState.enemies[0].health -= 2;
+    battleLog("You slap the snake. Ouch.");
+}
+
 VarHooks.push(function() {
     const logCont = $el("battle-log");
     if (!logCont) return;
@@ -85,6 +90,22 @@ VarHooks.push(function() {
         const guy = $e("battle-guy", battleStage);
         $e("span", guy, {classes: ["name"], innerText: enemy.name});
         $e("img", guy, {src: "img/snake.png"});
+
+        // Clammmmp
+        enemy.health = Math.max(0, Math.min(enemy.maxHealth, enemy.health));
+
+        const healthBar = $e("bar", guy, {classes: ["health"]});
+        const healthBarInner = $e(
+            "bar-inner",
+            healthBar,
+            {"style.width": (enemy.health / enemy.maxHealth * 100) + "%"}
+        );
+        const healthBarText = $e(
+            "span",
+            healthBar,
+            {innerText: `${enemy.health} / ${enemy.maxHealth} HP`}
+        );
+
         console.log(enemy);
     }
 });

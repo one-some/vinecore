@@ -119,6 +119,7 @@ battle-guy {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 8px;
 }
 
 battle-guy .name {
@@ -139,4 +140,38 @@ battle-log {
     color: white;
     font-family: monospace;
     flex-grow: 1;
+}
+
+bar {
+    display: block;
+    position: relative;
+    height: 32px;
+    width: 256px;
+    border: 4px solid black;
+    font-family: monospace;
+    background-color: #181818;
+}
+
+bar-inner {
+    display: block;
+    transition: width 1s;
+    height: 100%;
+}
+
+bar.health bar-inner {
+    display: block;
+    background-color: #c40101;
+}
+
+bar span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    font-size: 16px;
 }

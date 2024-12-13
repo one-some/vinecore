@@ -82,7 +82,7 @@ function processTag(tag, container) {
             anchor.addEventListener("click", function() {
                 if (tag.kv["script"]) {
                     eval(tag.kv["script"]);
-                    jumpTo(gameGlobals.currentPassage);
+                    if (tag.kv["refresh"] !== "no") jumpTo(gameGlobals.currentPassage);
                 }
 
                 if (tag.kv["time"]) passTime(parseInt(tag.kv["time"]) * 60 * randRange(0.9, 1.1));
