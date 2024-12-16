@@ -115,7 +115,7 @@ function processTag(tag, container) {
         case "condition":
             const cond = Conditions[tag.bits[0]];
             if (!cond) throw new Error("Bad condition!");
-            gameGlobals.player.conditions[cond] = { fromEnv: true }
+            gameGlobals.player.addCondition(cond, {fromEnv: true});
             break;
         case "bg":
             bgEl.src = `bg/${tag.bits[0]}.png`;
@@ -175,6 +175,8 @@ function battleLog(text) {
 }
 
 function startBattle() {
+    gameGlobals.battleState.enemies = [new classes.snake()];
+
     gameGlobals.battleState.log = [];
     battleLog("You leap into battle!");
     for (const enemy of gameGlobals.battleState.enemies) {
@@ -273,8 +275,6 @@ async function jumpTo(passageName, {instant = false}={}) {
     }
 
     refreshHooks();
-
-    if (passageName === "battle") startBattle();
 
     stageEl.style.opacity = 1.0;
     await timeout(210);

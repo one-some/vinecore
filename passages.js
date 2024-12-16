@@ -12,7 +12,7 @@ forest: `
 [bg forest]
 Welcome toooo the forest
 
-[a goto:desert text:"Walk to the forest" time:20]
+[a goto:desert text:"Walk to the desert" time:20]
 
 [a goto:battle text:"Fight"]
 

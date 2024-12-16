@@ -30,6 +30,12 @@ classes.character = (class {
     get lang_theCharacter() {
         return `the ${this.name}`;
     }
+
+    addCondition(condition, {fromEnv=true}={}) {
+        if (!Object.values(Conditions).includes(condition)) throw new Error("Bad condition");
+
+        this.conditions[condition] = { fromEnv: fromEnv };
+    }
 })
 
 classes.snake = (class extends classes.character {
@@ -38,6 +44,11 @@ classes.snake = (class extends classes.character {
 
     battleNoise() {
         battleLog(`${this.name} bears its fangs.`);
+    }
+
+    attack() {
+        gameGlobals.player.addCondition(Conditions.POISON);
+        gameGlobals.player.doDamage(3);
     }
 });
 
@@ -48,17 +59,23 @@ for (const [key, cls] of Object.entries(classes)) {
 const Conditions = {
     COLD: "cold",
     HOT: "hot",
+    POISON: "poison",
 };
 
 const ConditionsData = {
     [Conditions.COLD]: {
-        text: "You are very cold.",
+        text: "COLD",
         color: "lightblue"
     },
     [Conditions.HOT]: {
-        text: "You are very hot.",
+        text: "HOT",
         color: "red",
         desc: "An overwhelming heat consumes you. Healing will be difficult.",
+    },
+    [Conditions.POISON]: {
+        text: "POISON",
+        color: "purple",
+        desc: "A poison courses through your veins."
     }
 };
 
@@ -83,6 +100,11 @@ function passTime(time) {
     gameGlobals.time += Math.ceil(time);
 }
 
+function checkBattleEnd() {
+    if (gameGlobals.player.dead) return battleEnd(false);
+    if (!gameGlobals.battleState.enemies.filter(x => !x.dead).length) return battleEnd(true);
+}
+
 function battleEnd(won) {
     battleLog(won ? "You win!" : "You lost!");
     gameGlobals.battleState.wonBattle = won;
@@ -93,7 +115,8 @@ function battleSlap() {
     const enemy = gameGlobals.battleState.enemies[0];
     enemy.doDamage(2);
     battleLog(`You slap ${enemy.lang_theCharacter}. Ouch.`);
-    if (enemy.dead) battleEnd(true);
+    enemy.attack();
+    checkBattleEnd();
 }
 
 VarHooks.push(function() {
@@ -102,7 +125,7 @@ VarHooks.push(function() {
 
     logCont.innerHTML = "";
     for (const msg of gameGlobals.battleState.log) {
-        $e("log-entry", logCont, {innerText: msg.text});
+        $e("log-entry", logCont, {innerText: msg.text}).scrollIntoView();
     }
 
     const battleStage = $el("#battle-stage");

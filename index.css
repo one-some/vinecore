@@ -140,6 +140,7 @@ battle-log {
     color: white;
     font-family: monospace;
     flex-grow: 1;
+    overflow-y: auto;
 }
 
 bar {
