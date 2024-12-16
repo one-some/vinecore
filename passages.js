@@ -29,7 +29,17 @@ battle: `
     </battle-guy>
 </div>
 <battle-log></battle-log>
-[a goto:$battleState.battleReturnLocation text:"Run"]
-[a script:"battleSlap()" text:"Slap" refresh:no]
+[if criteria:"gameGlobals.battleState.inBattle"]
+    [a goto:$battleState.battleReturnLocation text:"Run"]
+    [a script:"battleSlap()" text:"Slap"]
+[else]
+    [if criteria:"gameGlobals.battleState.wonBattle"]
+        You win.
+        [a goto:$battleState.battleReturnLocation text:"Claim junk."]
+    [else]
+        You lose.
+        [a goto:$battleState.battleReturnLocation text:"Cry and lose"]
+    [/if]
+[/if]
 `
 };

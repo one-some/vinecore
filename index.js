@@ -4,12 +4,73 @@ const bgEl = document.querySelector("#bg");
 let shortcuts = {};
 let transitioning = false;
 
+const execState = {
+    nodes: [],
+    nodeIndex: 0,
+    container: null
+};
+
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function randRange(start, end) {
     return start + (Math.random() * (end - start));
+}
+
+function parseIncNode() {
+    return parseTag(execState.nodes[++execState.nodeIndex].content);
+}
+
+function execNode() {
+    const node = execState.nodes[execState.nodeIndex];
+
+    // Insert text with HTML
+    if (node.type === "text") {
+        execState.container.insertAdjacentHTML(
+            "beforeend",
+            node.content.replaceAll("\n", "<br>")
+        );
+        return;
+    }
+
+    const tag = parseTag(node.content);
+
+    // QUESTIONABLE: "if" the only eating-style tag so this is rly specific
+    if (tag.name === "if") {
+        if (!tag.kv["criteria"]) throw new Error("Expected CRITERIA for if!");
+        const good = eval(tag.kv["criteria"]);
+
+        console.log(good);
+        if (good) {
+            // Condition passed: run until else statement.
+            while (true) {
+                const nodeName = parseIncNode().name;
+                // If done, we're JUST done.
+                if (nodeName === "/if") return;
+                // If else, ...[1]
+                if (nodeName === "else") break;
+
+                // Otherwise run the node
+                execNode();
+            }
+
+            // [1]...skip until end.
+            while (parseIncNode().name != "/if") {}
+        } else {
+            // Condition failed: skip to else statement...
+            while (true) {
+                const nodeName = parseIncNode().name;
+                if (nodeName === "/if") return;
+                if (nodeName === "else") break;
+            }
+
+            // ...then run until end
+            while (parseIncNode().name !== "/if") execNode();
+        }
+    }
+
+    processTag(tag, execState.container);
 }
 
 function parseTag(tagText) {
@@ -82,7 +143,13 @@ function processTag(tag, container) {
             anchor.addEventListener("click", function() {
                 if (tag.kv["script"]) {
                     eval(tag.kv["script"]);
-                    if (tag.kv["refresh"] !== "no") jumpTo(gameGlobals.currentPassage);
+
+                    if (tag.kv["refresh"] !== "no") {
+                        jumpTo(
+                            gameGlobals.currentPassage,
+                            { instant: tag.kv["refresh"] === "instant" }
+                        );
+                    }
                 }
 
                 if (tag.kv["time"]) passTime(parseInt(tag.kv["time"]) * 60 * randRange(0.9, 1.1));
@@ -126,6 +193,9 @@ async function jumpTo(passageName, {instant = false}={}) {
         startBattle();
         gameGlobals.battleState.inBattle = true;
         gameGlobals.battleState.battleReturnLocation = gameGlobals.currentPassage;
+    } else if (passageName === "battle") {
+        // If we're just doing battle script stuff, don't show refresh animation
+        instant = true;
     }
 
     // Update passage state
@@ -180,28 +250,13 @@ async function jumpTo(passageName, {instant = false}={}) {
         return hitText;
     });
 
-
-    // Actually do stuff
     const container = $e("passage", null, {passage: passageName});
-    for (let i = 0; i < nodes.length; i++) {
-        // Insert text with HTML
-        if (nodes[i].type === "text") {
-            container.insertAdjacentHTML("beforeend", nodes[i].content.replaceAll("\n", "<br>"));
-            continue;
-        }
+    execState.nodes = nodes;
+    execState.container = container;
+    execState.nodeIndex = 0;
 
-        const tag = parseTag(nodes[i].content);
-        // QUESTIONABLE: "if" the only eating-style tag so this is rly specific
-        if (tag.name === "if") {
-            if (!tag.kv["criteria"]) throw new Error("Expected CRITERIA for if!");
-            const good = eval(tag.kv["criteria"]);
-            if (good) continue;
-
-            // If the condition is false, skip until closing statement
-            while (parseTag(nodes[++i].content).name != "/if") {}
-        }
-
-        processTag(tag, container);
+    for (execState.nodeIndex = 0; execState.nodeIndex < execState.nodes.length; execState.nodeIndex++) {
+        execNode(container);
     }
 
     if (!instant) {

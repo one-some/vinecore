@@ -17,6 +17,19 @@ classes.character = (class {
     battleNoise() {
         battleLog(`${this.name} looks angry... grrrrr`);
     }
+
+    doDamage(damage) {
+        this.health = Math.max(0, this.health - damage);
+    }
+
+    get dead() {
+        return this.health <= 0;
+    }
+
+    // Lang. I don't like how these pollute the character object but need a reference that isn't circular for saving
+    get lang_theCharacter() {
+        return `the ${this.name}`;
+    }
 })
 
 classes.snake = (class extends classes.character {
@@ -59,6 +72,7 @@ let gameGlobals = {
             new classes.snake()
         ],
         inBattle: false,
+        wonBattle: null,
         battleReturnLocation: null,
         log: [],
     },
@@ -69,9 +83,17 @@ function passTime(time) {
     gameGlobals.time += Math.ceil(time);
 }
 
+function battleEnd(won) {
+    battleLog(won ? "You win!" : "You lost!");
+    gameGlobals.battleState.wonBattle = won;
+    gameGlobals.battleState.inBattle = false;
+}
+
 function battleSlap() {
-    gameGlobals.battleState.enemies[0].health -= 2;
-    battleLog("You slap the snake. Ouch.");
+    const enemy = gameGlobals.battleState.enemies[0];
+    enemy.doDamage(2);
+    battleLog(`You slap ${enemy.lang_theCharacter}. Ouch.`);
+    if (enemy.dead) battleEnd(true);
 }
 
 VarHooks.push(function() {
