@@ -210,7 +210,8 @@ async function jumpTo(passageName, {instant = false}={}) {
     // Remove old conditions from the player's previous environment (ie hot from desert). These will
     // be re-applied if needed soon...
     for (const [condName, condInstDat] of Object.entries(gameGlobals.player.conditions)) {
-        if (condInstDat.fromEnv) delete gameGlobals.player.conditions[condName];
+        if (!condInstDat.fromEnv) continue;
+        delete gameGlobals.player.conditions[condName];
     }
 
     shortcuts = {};

@@ -31,10 +31,10 @@ classes.character = (class {
         return `the ${this.name}`;
     }
 
-    addCondition(condition, {fromEnv=true}={}) {
+    addCondition(condition, {fromEnv=false, level=1}={}) {
         if (!Object.values(Conditions).includes(condition)) throw new Error("Bad condition");
 
-        this.conditions[condition] = { fromEnv: fromEnv };
+        this.conditions[condition] = { fromEnv: fromEnv, level: level };
     }
 })
 
@@ -47,6 +47,7 @@ classes.snake = (class extends classes.character {
     }
 
     attack() {
+        console.log("ATTACK");
         gameGlobals.player.addCondition(Conditions.POISON);
         gameGlobals.player.doDamage(3);
     }
@@ -64,16 +65,16 @@ const Conditions = {
 
 const ConditionsData = {
     [Conditions.COLD]: {
-        text: "COLD",
+        text: "Cold",
         color: "lightblue"
     },
     [Conditions.HOT]: {
-        text: "HOT",
+        text: "Hot",
         color: "red",
         desc: "An overwhelming heat consumes you. Healing will be difficult.",
     },
     [Conditions.POISON]: {
-        text: "POISON",
+        text: "Poison",
         color: "purple",
         desc: "A poison courses through your veins."
     }
@@ -109,6 +110,10 @@ function battleEnd(won) {
     battleLog(won ? "You win!" : "You lost!");
     gameGlobals.battleState.wonBattle = won;
     gameGlobals.battleState.inBattle = false;
+
+    if (!won) {
+        gameGlobals.player.health = gameGlobals.player.maxHealth;
+    }
 }
 
 function battleSlap() {
@@ -150,8 +155,6 @@ VarHooks.push(function() {
             healthBar,
             {innerText: `${enemy.health} / ${enemy.maxHealth} HP`}
         );
-
-        console.log(enemy);
     }
 });
 
@@ -162,8 +165,32 @@ VarHooks.push(function() {
     for (const [condName, condInstDat] of Object.entries(gameGlobals.player.conditions)) {
         const dat = ConditionsData[condName];
         if (!dat) throw new Error("Bad condition");
-        $e("cond", condContainer, { innerText: dat.text, "style.color": dat.color, title: dat.desc});
+
+        $e(
+            "cond",
+            condContainer,
+            {
+                innerText: `${dat.text} ${toRoman(condInstDat.level) ?? 1}`,
+                "style.backgroundColor": dat.color,
+                title: dat.desc
+            }
+    );
     }
+
+    const healthBar = document.getElementById("plr-health");
+    healthBar.innerHTML = "";
+
+    const healthBarInner = $e(
+        "bar-inner",
+        healthBar,
+        {"style.width": (gameGlobals.player.health / gameGlobals.player.maxHealth * 100) + "%"}
+    );
+
+    const healthBarText = $e(
+        "span",
+        healthBar,
+        {innerText: `${gameGlobals.player.health} / ${gameGlobals.player.maxHealth} HP`}
+    );
 });
 
 VarHooks.push(function() {
