@@ -37,9 +37,13 @@ battle: `
         You win.
         [a goto:$battleState.battleReturnLocation text:"Claim junk."]
     [else]
-        You lose.
-        [a goto:$battleState.battleReturnLocation text:"Cry and lose"]
+        A groan escapes your chest and you feel your chest topple to the ground.
+        [a goto:dead text:"Die"]
     [/if]
 [/if]
+`,
+dead: `
+You've died. Let's get you back on your feet.
+[a script:"gameGlobals.player.doDamage(-gameGlobals.player.maxHealth * randRange(0.5, 0.9))" goto:$lastLegitPassage time:1292 text:"Your eyes slip open after some time..."]
 `
 };

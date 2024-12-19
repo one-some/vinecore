@@ -27,7 +27,9 @@
             </span>
 
             <status-conditions></status-conditions>
-            <bar id="plr-health" class="health"><bar>
+            <bar id="plr-health" class="health"></bar>
+
+            <a onclick="showModal('inventory')">Inventory [Shift+I]</a>
         </sidebar>
         <passage-container>
             <img id="bg" src="bg/desert.png">
@@ -36,9 +38,31 @@
             </passage-stage>
         </passage-container>
 
+        <modal-container class="hidden">
+            <modal modal-id="inventory">
+                <div id="item-container"></div>
+                <div id="item-details">
+                    A awesome item...
+                    <br><a id="use-item" style="color: gold" shortcut="u">[u] Quaff</a>
+                    <br><a id="toss-item" style="color: red" shortcut="t">[t] Toss it</a>
+                </div>
+            </modal>
+
+            <modal modal-id="confirm">
+                <span id="conf-msg">?</span>
+                <div id="conf-split">
+                    <div id="conf-yea" shortcut="y">[Y] Sure</div>
+                    <div id="conf-nae" shortcut="n">[N] No way</div>
+                </div>
+            </modal>
+
+        </modal-container>
+
         <script src="util.js"></script>
         <script src="passages.js"></script>
         <script src="player.js"></script>
         <script src="index.js"></script>
+        <script src="modal.js"></script>
+        <script src="inventory.js"></script>
     </body>
 </html>

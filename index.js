@@ -10,14 +10,6 @@ const execState = {
     container: null
 };
 
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function randRange(start, end) {
-    return start + (Math.random() * (end - start));
-}
-
 function parseIncNode() {
     return parseTag(execState.nodes[++execState.nodeIndex].content);
 }
@@ -144,7 +136,7 @@ function processTag(tag, container) {
                 if (tag.kv["script"]) {
                     eval(tag.kv["script"]);
 
-                    if (tag.kv["refresh"] !== "no") {
+                    if (tag.kv["refresh"] !== "no" && !tag.kv["goto"]) {
                         jumpTo(
                             gameGlobals.currentPassage,
                             { instant: tag.kv["refresh"] === "instant" }
@@ -202,6 +194,11 @@ async function jumpTo(passageName, {instant = false}={}) {
 
     // Update passage state
     gameGlobals.currentPassage = passageName;
+
+    if (!["battle", "dead"].includes(passageName)) {
+        gameGlobals.lastLegitPassage = passageName;
+    }
+
     gameGlobals.passageHistory.push(passageName);
     gameGlobals.passageHistory = gameGlobals.passageHistory.slice(-30);
 
@@ -286,9 +283,8 @@ jumpTo(gameGlobals.currentPassage, {instant: true});
 document.addEventListener("keydown", function(event) {
     if (event.ctrlKey) return;
 
-    const key = event.key.toLowerCase();
-    if (!shortcuts[key]) return;
+    if (!shortcuts[event.key]) return;
 
     event.preventDefault();
-    shortcuts[key].click();
+    shortcuts[event.key].click();
 });

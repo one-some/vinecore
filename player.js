@@ -19,7 +19,14 @@ classes.character = (class {
     }
 
     doDamage(damage) {
-        this.health = Math.max(0, this.health - damage);
+        this.health = Math.round(Math.min(this.maxHealth, Math.max(0, this.health - damage)));
+        if (!this.health) this.die();
+    }
+
+    die() {
+        if (this.isPlayer && gameGlobals.currentPassage !== "battle") {
+            jumpTo("dead");
+        }
     }
 
     get dead() {
@@ -35,6 +42,10 @@ classes.character = (class {
         if (!Object.values(Conditions).includes(condition)) throw new Error("Bad condition");
 
         this.conditions[condition] = { fromEnv: fromEnv, level: level };
+    }
+
+    get isPlayer() {
+        return this === gameGlobals.player;
     }
 })
 
@@ -84,6 +95,7 @@ let gameGlobals = {
     player: new classes.character(),
     time: 200,
     currentPassage: Array.from(Object.keys(RawPassages))[0],
+    lastLegitPassage: null,
     passageHistory: [],
     battleState: {
         enemies: [
@@ -110,10 +122,6 @@ function battleEnd(won) {
     battleLog(won ? "You win!" : "You lost!");
     gameGlobals.battleState.wonBattle = won;
     gameGlobals.battleState.inBattle = false;
-
-    if (!won) {
-        gameGlobals.player.health = gameGlobals.player.maxHealth;
-    }
 }
 
 function battleSlap() {

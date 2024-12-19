@@ -98,3 +98,11 @@ function toRoman(num) {
     return str;
 }
 
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function randRange(start, end) {
+    return start + (Math.random() * (end - start));
+}
+
