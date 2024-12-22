@@ -2,15 +2,17 @@ let selectedItem;
 const itemContainer = $el("#item-container");
 
 function updateInventoryListing() {
+    console.info("Updating inventory");
+
     itemContainer.innerHTML = "";
 
     for (let i = 0; i < gameGlobals.player.inventory.length; i++) {
         const item = gameGlobals.player.inventory[i];
 
         const itemEl = $e("div", itemContainer, {classes: ["inv-item"]});
-        $e("img", itemEl, {src: `img/${item.iconPath}`});
+        $e("img", itemEl, {src: `img/${item.constructor.iconPath}`});
         const stats = $e("div", itemEl, {classes: ["item-stats"]});
-        $e("span", stats, {innerText: item.name, classes: ["item-name"]});
+        $e("span", stats, {innerText: item.constructor.name, classes: ["item-name"]});
         $e("span", stats, {innerText: `(x${String(item.count).padStart(2, "0")})`, classes: ["item-count"]});
 
         const itemRef = gameGlobals.player.inventory[i];
@@ -25,6 +27,8 @@ function updateInventoryListing() {
     }
 }
 
+hookModal("inventory", updateInventoryListing);
+
 function selectItem(item) {
     selectedItem = item;
     $el("#item-desc").innerText = item.description;
@@ -32,7 +36,7 @@ function selectItem(item) {
     const actionContainer = $el("#item-actions");
     actionContainer.innerHTML = "";
 
-    for (const action of item.actions) {
+    for (const action of item.constructor.actions) {
         const shortcut = "q";
 
         const actionEl = $e(
@@ -44,7 +48,7 @@ function selectItem(item) {
                 "shortcut": shortcut,
             }
         );
-        actionEl.addEventListener("click", action.func);
+        actionEl.addEventListener("click", action.func.bind(item));
     }
 
     $el("#item-desc").innerText = item.description;

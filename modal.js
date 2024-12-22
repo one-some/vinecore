@@ -1,3 +1,4 @@
+const modalHooks = {};
 const modalContainer = $el("modal-container");
 
 function ynPrompt(text) {
@@ -18,6 +19,11 @@ function ynPrompt(text) {
     });
 }
 
+function hookModal(modal, callback) {
+    if (!modalHooks[modal]) modalHooks[modal] = [];
+    modalHooks[modal].push(callback);
+}
+
 function showModal(modalId) {
     for (const etcModal of document.querySelectorAll("modal")) {
         etcModal.classList.add("hidden");
@@ -25,6 +31,10 @@ function showModal(modalId) {
 
     const modal = $el(`[modal-id="${modalId}"]`);
     if (!modal) throw new Error(`Bad modalid ${modalId}`);
+
+    for (const hook of modalHooks[modalId] || []) {
+        hook();
+    }
 
     modalContainer.classList.remove("hidden");
     modal.classList.remove("hidden");
