@@ -106,3 +106,10 @@ function randRange(start, end) {
     return start + (Math.random() * (end - start));
 }
 
+function randChoice(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
+function randOneIn(n) {
+    return Math.random() < (1 / n);
+}

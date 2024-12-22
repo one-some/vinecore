@@ -16,6 +16,7 @@ body {
     display: flex;
 
     font-family: sans-serif;
+    overflow: clip;
 }
 
 a {
@@ -318,3 +319,42 @@ modal[modal-id="confirm"] {
 
 #conf-yea { background-color: darkgreen; }
 #conf-nae { background-color: darkred; }
+
+toast {
+    display: block;
+    position: absolute;
+    transform: translateX(calc(15px + 100%));
+    top: 15px;
+    right: 15px;
+    min-height: 64px;
+    min-width: 200px;
+    background-color: #3e0000;
+    padding: 8px;
+    z-index: 6;
+    pointer-events: none;
+    transition: transform 400ms;
+}
+
+toast.out {
+    transform: none;
+}
+
+toast .title {
+    display: block;
+    font-weight: bold;
+    color: #ff7a7a;
+}
+
+toast .desc {
+    color: #ffb4b4;
+}
+
+toast-bar {
+    width: 100%;
+    height: 4px;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    background-color: #B00000;
+    transition-timing-function: linear;
+}

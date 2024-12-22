@@ -28,13 +28,19 @@ regClass("character", class {
         }
     }
 
+    get atMaxHealth() {
+        return this.health >= this.maxHealth;
+    }
+
     get dead() {
         return this.health <= 0;
     }
 
-    // Lang. I don't like how these pollute the character object but need a reference that isn't circular for saving
-    get lang_theCharacter() {
-        return `the ${this.name}`;
+    lang(text) {
+        text = text.replaceAll("Bob's", `${this.name}'s`);
+        text = text.replaceAll("his", "his");
+        text = text.replaceAll("Bob", `${this.name}`);
+        return text;
     }
 
     addCondition(condition, {fromEnv=false, level=1}={}) {
@@ -56,10 +62,15 @@ regClass("snake", class extends classes.character {
         battleLog(`${this.name} bears its fangs.`);
     }
 
-    attack() {
-        console.log("ATTACK");
-        gameGlobals.player.addCondition(Conditions.POISON);
-        gameGlobals.player.doDamage(3);
+    attack(target) {
+        const gonnaPoison = !gameGlobals.player.conditions.poision && randOneIn(6);
+        if (gonnaPoison) {
+            battleLog(this.lang("Bob injects his venom into ") + target.lang("Bob. Bob is now poisoned."));
+            target.addCondition(Conditions.POISON);
+        } else {
+            battleLog(this.lang("Bob clamps his jaw onto ") + target.lang("Bob"));
+            gameGlobals.player.doDamage(3);
+        }
     }
 });
 
@@ -107,59 +118,6 @@ function passTime(time) {
     if (isNaN(time)) throw new Error("Bad time!");
     gameGlobals.time += Math.ceil(time);
 }
-
-function checkBattleEnd() {
-    if (gameGlobals.player.dead) return battleEnd(false);
-    if (!gameGlobals.battleState.enemies.filter(x => !x.dead).length) return battleEnd(true);
-}
-
-function battleEnd(won) {
-    battleLog(won ? "You win!" : "You lost!");
-    gameGlobals.battleState.wonBattle = won;
-    gameGlobals.battleState.inBattle = false;
-}
-
-function battleSlap() {
-    const enemy = gameGlobals.battleState.enemies[0];
-    enemy.doDamage(2);
-    battleLog(`You slap ${enemy.lang_theCharacter}. Ouch.`);
-    enemy.attack();
-    checkBattleEnd();
-}
-
-VarHooks.push(function() {
-    const logCont = $el("battle-log");
-    if (!logCont) return;
-
-    logCont.innerHTML = "";
-    for (const msg of gameGlobals.battleState.log) {
-        $e("log-entry", logCont, {innerText: msg.text}).scrollIntoView();
-    }
-
-    const battleStage = $el("#battle-stage");
-    battleStage.innerHTML = "";
-
-    for (const enemy of gameGlobals.battleState.enemies) {
-        const guy = $e("battle-guy", battleStage);
-        $e("span", guy, {classes: ["name"], innerText: enemy.name});
-        $e("img", guy, {src: "img/snake.png"});
-
-        // Clammmmp
-        enemy.health = Math.max(0, Math.min(enemy.maxHealth, enemy.health));
-
-        const healthBar = $e("bar", guy, {classes: ["health"]});
-        const healthBarInner = $e(
-            "bar-inner",
-            healthBar,
-            {"style.width": (enemy.health / enemy.maxHealth * 100) + "%"}
-        );
-        const healthBarText = $e(
-            "span",
-            healthBar,
-            {innerText: `${enemy.health} / ${enemy.maxHealth} HP`}
-        );
-    }
-});
 
 VarHooks.push(function() {
     const condContainer = document.querySelector("status-conditions");
@@ -277,7 +235,8 @@ function refreshHooks() {
 }
 
 document.addEventListener("readystatechange", function() {
-    console.log("YES");
+    if (document.readyState !== "complete") return;
+
     load();
     refreshHooks();
     jumpTo(gameGlobals.currentPassage, {instant: true});

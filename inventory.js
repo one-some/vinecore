@@ -2,12 +2,11 @@ let selectedItem;
 const itemContainer = $el("#item-container");
 
 function updateInventoryListing() {
-    console.info("Updating inventory");
-
     itemContainer.innerHTML = "";
 
     for (let i = 0; i < gameGlobals.player.inventory.length; i++) {
         const item = gameGlobals.player.inventory[i];
+        if (!selectedItem) selectedItem = item;
 
         const itemEl = $e("div", itemContainer, {classes: ["inv-item"]});
         $e("img", itemEl, {src: `img/${item.constructor.iconPath}`});
@@ -31,7 +30,7 @@ hookModal("inventory", updateInventoryListing);
 
 function selectItem(item) {
     selectedItem = item;
-    $el("#item-desc").innerText = item.description;
+    $el("#item-desc").innerText = item.constructor.description;
 
     const actionContainer = $el("#item-actions");
     actionContainer.innerHTML = "";
@@ -48,10 +47,12 @@ function selectItem(item) {
                 "shortcut": shortcut,
             }
         );
-        actionEl.addEventListener("click", action.func.bind(item));
+        actionEl.addEventListener("click", function() {
+            action.func.bind(item)();
+            updateInventoryListing();
+            refreshHooks();
+        });
     }
-
-    $el("#item-desc").innerText = item.description;
 }
 
 updateInventoryListing();

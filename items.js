@@ -22,8 +22,33 @@ regClass("weakHealthPotion", class extends classes.item{
         name: "Quaff",
         color: "gold",
         func: function() {
+            if (gameGlobals.player.atMaxHealth) {
+                toastError("Won't drink", "I'm already at max health.");
+                return;
+            }
+
             this.consumeItem();
             gameGlobals.player.doDamage(-20);
+        }
+    }];
+});
+
+regClass("weakRemedy", class extends classes.item{
+    static name = "Weak Remedy";
+    static description = "Supposed to rid you of poison, but it's uncertain. It smells of sulfur.";
+    static maxStack = 16;
+    static iconPath = "potion.png";
+    static actions = [{
+        name: "Quaff",
+        color: "gold",
+        func: function() {
+            if (!gameGlobals.player.conditions.poison) {
+                toastError("Won't drink", "I'm not poisoned. I'd like to avoid this concoction if possible.");
+                return;
+            }
+
+            this.consumeItem();
+            delete gameGlobals.player.conditions.poison;
         }
     }];
 });

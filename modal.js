@@ -52,9 +52,9 @@ modalContainer.addEventListener("click", function(event) {
 document.addEventListener("keydown", function(event) {
     if (event.ctrlKey) return;
     if (event.shiftKey) return;
+    if (modalContainer.classList.contains("hidden")) return;
 
     if (event.key === "Escape") {
-        if (modalContainer.classList.contains("hidden")) return;
         hideModal();
         event.preventDefault();
         event.stopPropagation();
@@ -62,6 +62,7 @@ document.addEventListener("keydown", function(event) {
     }
 
     const hookedAnchors = $el("modal:not(.hidden)").querySelectorAll("[shortcut]");
+
     for (const a of hookedAnchors) {
         if (event.key !== a.getAttribute("shortcut")) continue;
         a.click();

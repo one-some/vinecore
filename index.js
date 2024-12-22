@@ -33,7 +33,6 @@ function execNode() {
         if (!tag.kv["criteria"]) throw new Error("Expected CRITERIA for if!");
         const good = eval(tag.kv["criteria"]);
 
-        console.log(good);
         if (good) {
             // Condition passed: run until else statement.
             while (true) {
@@ -159,20 +158,6 @@ function processTag(tag, container) {
             });
 
             break;
-    }
-}
-
-function battleLog(text) {
-    gameGlobals.battleState.log.push({text: text});
-}
-
-function startBattle() {
-    gameGlobals.battleState.enemies = [new classes.snake()];
-
-    gameGlobals.battleState.log = [];
-    battleLog("You leap into battle!");
-    for (const enemy of gameGlobals.battleState.enemies) {
-        enemy.battleNoise();
     }
 }
 

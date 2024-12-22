@@ -20,7 +20,6 @@ function processSave(thing) {
 
     switch (thing.constructor.name) {
         case "Array":
-            console.log(thing);
             return thing.map(x => processSave(x));
         case "Object":
             const obClone = {};
@@ -66,10 +65,7 @@ function loadOb2(thing) {
             return thing.map(x => loadOb2(x));
         case "Object":
             let val = {};
-            if (thing._key) {
-                console.warn(thing._key);
-                val = new classes[thing._key]();
-            }
+            if (thing._key) val = new classes[thing._key]();
 
             for (const [k, v] of Object.entries(thing)) {
                 val[k] = loadOb2(v);
