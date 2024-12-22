@@ -1,14 +1,13 @@
 const VarHooks = [];
 
-const classes = {};
-
-classes.character = (class {
+regClass("character", class {
     name = "? ? ?";
     role = "testificate";
     money = 0;
     maxHealth = 100;
     health = 0;
     conditions = {};
+    inventory = [];
 
     constructor() {
         this.health = this.maxHealth;
@@ -47,9 +46,9 @@ classes.character = (class {
     get isPlayer() {
         return this === gameGlobals.player;
     }
-})
+});
 
-classes.snake = (class extends classes.character {
+regClass("snake", class extends classes.character {
     name = "Snake";
     maxHealth = 50;
 
@@ -63,10 +62,6 @@ classes.snake = (class extends classes.character {
         gameGlobals.player.doDamage(3);
     }
 });
-
-for (const [key, cls] of Object.entries(classes)) {
-    cls.prototype._key = key;
-}
 
 const Conditions = {
     COLD: "cold",
@@ -281,82 +276,9 @@ function refreshHooks() {
     return true;
 }
 
-function processSave(thing) {
-    if (thing === null) return null;
-    if (thing === undefined) {
-        alert("Undefined in save.... beware...");
-        return null;
-    }
-
-    if (!thing.constructor) return thing;
-
-    switch (thing.constructor.name) {
-        case "Array":
-            return thing.map(x => processSave(x));
-        case "Object":
-            const obClone = {};
-            for (const [k, v] of Object.entries(thing)) {
-                obClone[k] = processSave(v);
-            }
-            return obClone;
-    }
-
-    if (typeof thing === "object" && thing._key) {
-        thing._key = thing._key;
-        return thing;
-    }
-
-    return thing;
-}
-
-function save() {
-    let save = processSave(gameGlobals);
-
-    localStorage.setItem(
-        "saves",
-        JSON.stringify({auto: save})
-    );
-}
-
-function load() {
-    const strGlob = JSON.parse(localStorage.getItem("saves")).auto;
-    gameGlobals = loadOb2(strGlob);
-}
-
-function evillllloadOb(oldMeat, newSkeleton) {
-    for (const [k, skeletonV] of Object.entries(newSkeleton)) {
-        const isObject = Object.prototype.toString.call(skeletonV).includes("Object");
-        if (isObject) {
-            // HACK. Who knows what this will do
-            if (oldMeat[k] === undefined) oldMeat[k] = {};
-
-            evillllloadOb(oldMeat[k], skeletonV);
-            continue;
-        }
-
-        oldMeat[k] = skeletonV;
-    }
-}
-
-function loadOb2(thing) {
-    if (!thing) return thing;
-    if (!thing.constructor) return thing;
-
-    switch (thing.constructor.name) {
-        case "Array":
-            return thing.map(x => loadOb2(x));
-        case "Object":
-            let val = {};
-            if (thing._key) val = new classes[thing._key]();
-
-            for (const [k, v] of Object.entries(thing)) {
-                val[k] = loadOb2(v);
-            }
-            return val;
-    }
-
-    return thing;
-}
-
-load();
-refreshHooks();
+document.addEventListener("readystatechange", function() {
+    console.log("YES");
+    load();
+    refreshHooks();
+    jumpTo(gameGlobals.currentPassage, {instant: true});
+});

@@ -42,9 +42,11 @@
             <modal modal-id="inventory">
                 <div id="item-container"></div>
                 <div id="item-details">
-                    A awesome item...
-                    <br><a id="use-item" style="color: gold" shortcut="u">[u] Quaff</a>
-                    <br><a id="toss-item" style="color: red" shortcut="t">[t] Toss it</a>
+                    <span id="item-desc">A awesome item...</span>
+                    <div id="item-actions">
+                        <br><a id="use-item" style="color: gold" shortcut="q">[q] Quaff</a>
+                        <br><a id="toss-item" style="color: red" shortcut="t">[t] Toss it</a>
+                    </div>
                 </div>
             </modal>
 
@@ -59,10 +61,12 @@
         </modal-container>
 
         <script src="util.js"></script>
+        <script src="save.js"></script>
         <script src="passages.js"></script>
         <script src="player.js"></script>
+        <script src="items.js"></script>
+        <script src="inventory.js"></script>
         <script src="index.js"></script>
         <script src="modal.js"></script>
-        <script src="inventory.js"></script>
     </body>
 </html>
