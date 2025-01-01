@@ -31,9 +31,7 @@ battle: `
 <battle-log></battle-log>
 [if criteria:"gameGlobals.battleState.inBattle"]
     [a goto:$battleState.battleReturnLocation text:"Run"]
-    <div id="battle-choices">
-    [a script:"battleSlap()" text:"Slap"]
-    </div>
+    <div id="battle-choices"></div>
 [else]
     [if criteria:"gameGlobals.battleState.wonBattle"]
         You win.

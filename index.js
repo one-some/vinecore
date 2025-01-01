@@ -101,6 +101,19 @@ function parseTag(tagText) {
     };
 }
 
+function makeShortcutAnchor(text, container) {
+    const anchor = $e("a", container, {innerText: text});
+
+    for (const char of text.toLowerCase()) {
+        if (shortcuts[char]) continue;
+        anchor.innerText += ` [${char}]`;
+        shortcuts[char] = anchor;
+        break;
+    }
+
+    return anchor;
+}
+
 function processTag(tag, container) {
     switch (tag.name) {
         case "condition":
@@ -116,19 +129,11 @@ function processTag(tag, container) {
             break;
         case "a":
             if (!tag.kv["text"]) throw new Error("Expected anchor to have text");
-            const anchor = $e("a", container, {innerText: tag.kv["text"]});
+            const anchor = makeShortcutAnchor(tag.kv["text"], container);
 
             if (tag.kv["time"]) {
                 const minutes = parseInt(tag.kv["time"]);
                 anchor.innerText += ` [${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}]`;
-            }
-
-            for (let char of tag.kv["text"]) {
-                char = char.toLowerCase();
-                if (shortcuts[char]) continue;
-                anchor.innerText += ` [${char}]`;
-                shortcuts[char] = anchor;
-                break;
             }
 
             anchor.addEventListener("click", function() {

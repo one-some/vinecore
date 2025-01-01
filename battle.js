@@ -23,14 +23,6 @@ function battleEnd(won) {
     gameGlobals.battleState.inBattle = false;
 }
 
-function battleSlap() {
-    const enemy = gameGlobals.battleState.enemies[0];
-    enemy.doDamage(2);
-    battleLog(enemy.lang("You slap Bob. Ouch."));
-    checkBattleEnd();
-    battleEndTurn();
-}
-
 function battleEndTurn() {
     const enemy = gameGlobals.battleState.enemies[0];
     enemy.attack(gameGlobals.player);
@@ -54,6 +46,26 @@ function battleEndTurn() {
 }
 
 VarHooks.push(function() {
+    const choicesCont = $el("#battle-choices");
+    if (!choicesCont) return;
+
+    choicesCont.innerHTML = "";
+    for (const attack of gameGlobals.player.attacks) {
+        const anchor = makeShortcutAnchor(attack.name, choicesCont);
+
+        anchor.addEventListener("click", function() {
+            const target = gameGlobals.battleState.enemies[0];
+            if (attack.condition && !attack.condition.bind(gameGlobals.player)(target)) return;
+            attack.callback.bind(gameGlobals.player)(target);
+            checkBattleEnd();
+            battleEndTurn();
+
+            jumpTo(gameGlobals.currentPassage, { instant: true });
+        });
+    }
+
+
+    // Battle log
     const logCont = $el("battle-log");
     if (!logCont) return;
 
@@ -62,6 +74,7 @@ VarHooks.push(function() {
         $e("log-entry", logCont, {innerText: msg.text}).scrollIntoView();
     }
 
+    // Render stage
     const battleStage = $el("#battle-stage");
     battleStage.innerHTML = "";
 

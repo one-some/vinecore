@@ -53,6 +53,10 @@ regClass("character", class {
     get isPlayer() {
         return this === gameGlobals.player;
     }
+
+    get attacks() {
+        return this.constructor.attacks;
+    }
 });
 
 regClass("attack", class {
@@ -67,11 +71,11 @@ regClass("attack", class {
 regClass("player", class extends classes.character {
     static attacks = [
         new classes.attack(
-            "slap",
+            "Slap",
             null,
             2,
             function(target) {
-                battleLog(this.lang("Bob slaps") + target.lang("Bob. Ouch."));
+                battleLog(this.lang("Bob slaps ") + target.lang("Bob. Ouch."));
                 target.doDamage(2);
             }
         ),
@@ -84,7 +88,7 @@ regClass("snake", class extends classes.character {
 
     static attacks = [
         new classes.attack(
-            "bite",
+            "Bite",
             null,
             2,
             function(target) {
@@ -94,7 +98,7 @@ regClass("snake", class extends classes.character {
         ),
 
         new classes.attack(
-            "poison",
+            "Poison",
             (target) => !target.conditions.poison,
             6,
             function(target) {
@@ -147,7 +151,7 @@ const ConditionsData = {
 };
 
 let gameGlobals = {
-    player: new classes.character(),
+    player: new classes.player(),
     time: 200,
     currentPassage: Array.from(Object.keys(RawPassages))[0],
     lastLegitPassage: null,
