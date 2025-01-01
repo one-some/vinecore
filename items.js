@@ -11,6 +11,11 @@ regClass("item", class {
         if (this.count <= 0) throw new Error("Can't use. Out");
         this.count--;
     }
+
+    canStack(otherItem) {
+        if (this.constructor !== otherItem.constructor) return false;
+        return true;
+    }
 });
 
 regClass("weakHealthPotion", class extends classes.item{

@@ -50,6 +50,20 @@ regClass("character", class {
         this.conditions[condition] = { fromEnv: fromEnv, level: level };
     }
 
+    addItem(item) {
+        // TODO: maxStack
+        
+        // Let's see if we can stack it anywhere
+        for (const invItem of this.inventory) {
+            if (!invItem.canStack(item)) continue;
+            invItem.count += item.count;
+            return;
+        }
+
+        // Ok we can't, let's just 
+        this.inventory.push(item);
+    }
+
     get isPlayer() {
         return this === gameGlobals.player;
     }

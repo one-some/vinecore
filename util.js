@@ -113,3 +113,17 @@ function randChoice(array) {
 function randOneIn(n) {
     return Math.random() < (1 / n);
 }
+
+function commonStart(strings){
+    // https://stackoverflow.com/a/1917041
+    
+    // Clever!
+    const sorted = strings.concat().sort();
+
+    let a1 = sorted[0]
+    let a2 = sorted.at(-1);
+    let a1Length = a1.length;
+    let i = 0;
+    while (i < a1Length && a1.charAt(i) === a2.charAt(i)) i++;
+    return a1.substring(0, i);
+}

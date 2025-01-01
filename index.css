@@ -358,3 +358,43 @@ toast-bar {
     background-color: #B00000;
     transition-timing-function: linear;
 }
+
+cmd-screen {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: #000000aa;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 9999;
+}
+
+cmd-screen fill {
+    flex-grow: 1;
+}
+
+#cmd-bar {
+    display: block;
+    height: 16px;
+    outline: none;
+    border: none;
+    border-top: 1px solid magenta;
+    background: black;
+    color: magenta;
+    font-family: monospace;
+}
+
+#cmd-log {
+    font-family: monospace;
+    white-space: break-spaces;
+}
+
+#cmd-log > * {
+    display: block;
+}
+
+#cmd-log > .error {
+    color: red;
+}
