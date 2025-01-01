@@ -8,6 +8,7 @@ regClass("character", class {
     health = 0;
     conditions = {};
     inventory = [];
+    static attacks = [];
 
     constructor() {
         this.health = this.maxHealth;
@@ -54,23 +55,71 @@ regClass("character", class {
     }
 });
 
+regClass("attack", class {
+    constructor(name, condition, chance, callback) {
+        this.name = name;
+        this.condition = condition;
+        this.chance = chance;
+        this.callback = callback;
+    }
+});
+
+regClass("player", class extends classes.character {
+    static attacks = [
+        new classes.attack(
+            "slap",
+            null,
+            2,
+            function(target) {
+                battleLog(this.lang("Bob slaps") + target.lang("Bob. Ouch."));
+                target.doDamage(2);
+            }
+        ),
+    ];
+});
+
 regClass("snake", class extends classes.character {
     name = "Snake";
     maxHealth = 50;
+
+    static attacks = [
+        new classes.attack(
+            "bite",
+            null,
+            2,
+            function(target) {
+                battleLog(this.lang("Bob clamps his jaw onto ") + target.lang("Bob"));
+                target.doDamage(3);
+            }
+        ),
+
+        new classes.attack(
+            "poison",
+            (target) => !target.conditions.poison,
+            6,
+            function(target) {
+                battleLog(this.lang("Bob injects his venom into ") + target.lang("Bob. Bob is now poisoned."));
+                target.addCondition(Conditions.POISON);
+            }
+        )
+
+    ];
 
     battleNoise() {
         battleLog(`${this.name} bears its fangs.`);
     }
 
     attack(target) {
-        const gonnaPoison = !gameGlobals.player.conditions.poision && randOneIn(6);
-        if (gonnaPoison) {
-            battleLog(this.lang("Bob injects his venom into ") + target.lang("Bob. Bob is now poisoned."));
-            target.addCondition(Conditions.POISON);
-        } else {
-            battleLog(this.lang("Bob clamps his jaw onto ") + target.lang("Bob"));
-            gameGlobals.player.doDamage(3);
+        for (let i=0; i<100; i++) {
+            for (const attack of this.constructor.attacks) {
+                if (attack.condition && !attack.condition.bind(this)(target)) continue;
+                if (!randOneIn(attack.chance)) continue;
+                attack.callback.bind(this)(target);
+                return;
+            }
         }
+
+        battleLog(this.lang("Bob doesn't know what to do!"));
     }
 });
 
