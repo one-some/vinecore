@@ -179,6 +179,7 @@ let gameGlobals = {
         battleReturnLocation: null,
         log: [],
     },
+    envTempF: 70
 };
 
 function passTime(time) {
@@ -187,6 +188,13 @@ function passTime(time) {
 }
 
 VarHooks.push(function() {
+    $el("#temperature").style.color = "#" + lerpColorMap(gameGlobals.envTempF, [
+        [0,  0x0000FF],
+        [70, 0x00FF00],
+        [90, 0xFF0000]
+    ]).toString(16).padStart(6, "0");
+
+
     const condContainer = document.querySelector("status-conditions");
     condContainer.innerHTML = "";
 

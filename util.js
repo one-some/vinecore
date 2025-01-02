@@ -127,3 +127,30 @@ function commonStart(strings){
     while (i < a1Length && a1.charAt(i) === a2.charAt(i)) i++;
     return a1.substring(0, i);
 }
+
+function lerpColors(j, k, blend) {
+    const r = ((j >> 16) * blend) + ((k >> 16) * (1 - blend));
+    const g = ((j >> 8) * blend) + ((k >> 8) * (1 - blend));
+    const b = (j * blend) + (k * (1 - blend));
+    return (r << 16) | (g << 8) | b;
+}
+
+function lerpColorMap(point, colorMap) {
+    // colorMap: [ [pointKey, rgbVal] ]
+
+    let first;
+    let last;
+    for (const colorKv of colorMap.sort((a, b) => a[0] - b[0])) {
+        if (colorKv[0] > point) {
+            last = colorKv;
+            break;
+        }
+        first = colorKv;
+    }
+
+    if (!last) return first[1];
+
+    const normBlend = (point - first[0]) / (last[0] - first[0]);
+    console.log(point, first, last, normBlend);
+    return lerpColors(first[1], last[1], 1 - normBlend);
+}

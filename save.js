@@ -53,7 +53,10 @@ function save() {
 
 function load() {
     const strGlob = JSON.parse(localStorage.getItem("saves")).auto;
-    gameGlobals = loadOb2(strGlob);
+    const newGameGlobals = loadOb2(strGlob);
+    for (const [k, v] of Object.entries(newGameGlobals)) {
+        gameGlobals[k] = v;
+    }
 }
 
 function loadOb2(thing) {
